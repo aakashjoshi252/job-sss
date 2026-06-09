@@ -16,16 +16,21 @@ const getSocketURL = () => {
   const configuredSocketUrl = import.meta.env.VITE_SOCKET_URL;
   const configuredApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
   const normalizeUrl = (url) => url?.split("#")[0].trim().replace(/(?:\/api\/v1)+\/?$/i, "").replace(/\/+$/, "");
+  const isRelativeUrl = (url) => url?.startsWith("/");
   const isLocalUrl = (url) =>
     /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/i.test(url);
-  const isUnsafeProductionUrl = (url) => import.meta.env.PROD && (url.startsWith("/") || isLocalUrl(url));
+  const isUnsafeProductionUrl = (url) => import.meta.env.PROD && !isRelativeUrl(url) && isLocalUrl(url);
+  const resolveSocketOrigin = (url) => {
+    if (isRelativeUrl(url)) return window.location.origin;
+    return normalizeUrl(url);
+  };
 
   if (configuredSocketUrl && !isUnsafeProductionUrl(configuredSocketUrl)) {
-    return normalizeUrl(configuredSocketUrl);
+    return resolveSocketOrigin(configuredSocketUrl);
   }
 
   if (configuredApiUrl && !isUnsafeProductionUrl(configuredApiUrl)) {
-    return normalizeUrl(configuredApiUrl);
+    return resolveSocketOrigin(configuredApiUrl);
   }
 
   return import.meta.env.PROD

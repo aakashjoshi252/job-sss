@@ -18,12 +18,14 @@ const normalizeApiBaseUrl = (value) => {
   if (!cleaned) return "";
 
   const deduped = cleaned.replace(/(?:\/api\/v1)+$/i, API_VERSION);
+  if (deduped.toLowerCase().endsWith("/api")) return `${deduped}/v1`;
   return deduped.toLowerCase().endsWith(API_VERSION) ? deduped : `${deduped}${API_VERSION}`;
 };
 
+const isRelativeUrl = (value) => value.startsWith("/");
 const isLocalUrl = (value) =>
   /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/i.test(value);
-const isUnsafeProductionUrl = (value) => import.meta.env.PROD && (value.startsWith("/") || isLocalUrl(value));
+const isUnsafeProductionUrl = (value) => import.meta.env.PROD && !isRelativeUrl(value) && isLocalUrl(value);
 
 const configuredApiUrl = cleanEnvValue(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL);
 const selectedApiUrl = configuredApiUrl && !isUnsafeProductionUrl(configuredApiUrl) ? configuredApiUrl : "";

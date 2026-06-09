@@ -1,48 +1,46 @@
-# Multi-stage build for optimized production image
-FROM node:18-alpine AS builder
+# syntax=docker/dockerfile:1.7
 
-# Set working directory
+FROM node:22-alpine AS base
+
 WORKDIR /app
 
-# Copy package files
+ENV PORT=5000 \
+    PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN apk add --no-cache \
+    chromium \
+    dumb-init \
+    font-noto \
+    freetype \
+    harfbuzz \
+    nss \
+    ttf-freefont
+
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+FROM base AS production-deps
+ENV NODE_ENV=production
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Production stage
-FROM node:18-alpine
-
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
-
-# Create app user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
-
-# Set working directory
-WORKDIR /app
-
-# Copy node_modules from builder
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-
-# Copy application files
-COPY --chown=nodejs:nodejs . .
-
-# Create uploads directory with proper permissions
-RUN mkdir -p uploads && chown -R nodejs:nodejs uploads
-
-# Switch to non-root user
-USER nodejs
-
-# Expose port
+FROM base AS development
+ENV NODE_ENV=development
+RUN npm ci && npm cache clean --force
+COPY --chown=node:node . .
+RUN mkdir -p uploads logs && chown -R node:node /app
+USER node
 EXPOSE 5000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "run", "dev"]
 
-# Start application
-CMD ["node", "server.js"]
+FROM base AS production
+ENV NODE_ENV=production
+COPY --from=production-deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node . .
+RUN mkdir -p uploads logs && chown -R node:node /app
+USER node
+EXPOSE 5000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD node -e "const http=require('http');const port=process.env.PORT||5000;const req=http.get({host:'127.0.0.1',port,path:'/health',timeout:3000},res=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));req.on('timeout',()=>{req.destroy();process.exit(1);});"
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "start"]
