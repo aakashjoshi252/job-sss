@@ -18,6 +18,7 @@ const {
   normalizeJobStatus,
   sanitizeJobForViewer,
 } = require("../utils/jobVisibility")
+const logger = require("../utils/logger")
 
 const parseCsv = (value) =>
   typeof value === "string"
@@ -171,7 +172,7 @@ const buildJobResponse = (job, viewer, extra = {}) => ({
 const jobsController = ({
   createJob: async (req, res) => {
     try {
-      console.log("Creating job with data:", req.body);
+      logger.info("Creating job", { recruiterId: req.user._id.toString() });
 
       const {
         // Basic Job Details
@@ -354,7 +355,7 @@ const jobsController = ({
 
       const newJob = await runWithOptionalTransaction(createJobWithUsage);
 
-      console.log("Job created successfully:", newJob._id);
+      logger.info("Job created successfully", { jobId: newJob._id.toString() });
 
       const adminIds = await User.find({ role: "admin" }).distinct("_id");
       if (adminIds.length > 0) {
@@ -380,7 +381,7 @@ const jobsController = ({
       });
 
     } catch (error) {
-      console.error("Create Job Error:", error);
+      logger.error(`Create job error: ${error.message}`, { stack: error.stack });
 
       if (error instanceof SubscriptionError) {
         return res.status(error.status).json({
@@ -509,7 +510,7 @@ const jobsController = ({
         data: featuredJobs.map((job) => sanitizeJobForViewer(job, req.user)),
       });
     } catch (error) {
-      console.error("Fetch Featured Jobs Error:", error);
+      logger.error(`Fetch featured jobs error: ${error.message}`, { stack: error.stack });
       res.status(500).json({
         success: false,
         message: "Error fetching featured jobs",
@@ -532,7 +533,7 @@ const jobsController = ({
         data: latestJobs.map((job) => sanitizeJobForViewer(job, req.user)),
       });
     } catch (error) {
-      console.error("Fetch Latest Jobs Error:", error);
+      logger.error(`Fetch latest jobs error: ${error.message}`, { stack: error.stack });
       return res.status(500).json({
         success: false,
         message: "Error fetching latest jobs",
@@ -633,7 +634,7 @@ const jobsController = ({
         },
       });
     } catch (error) {
-      console.error("Fetch Categories Error:", error);
+      logger.error(`Fetch categories error: ${error.message}`, { stack: error.stack });
       res.status(500).json({
         success: false,
         message: "Error fetching job categories",
@@ -672,7 +673,7 @@ const jobsController = ({
         })),
       });
     } catch (error) {
-      console.log(error);
+      logger.error(`Fetch recruiter jobs error: ${error.message}`, { stack: error.stack });
       res.status(500).json({ message: "Server error", error });
     }
   },
@@ -698,7 +699,7 @@ const jobsController = ({
         data: jobs.map((job) => sanitizeJobForViewer(job, req.user)),
       });
     } catch (error) {
-      console.log(error);
+      logger.error(`Fetch company jobs error: ${error.message}`, { stack: error.stack });
       res.status(500).json({ message: "Server error", error });
     }
   },
@@ -708,7 +709,7 @@ const jobsController = ({
       const { id } = req.params;
       const updates = req.body;
 
-      console.log("Updating job:", id, "with data:", updates);
+      logger.info("Updating job", { jobId: id, recruiterId: req.user._id.toString() });
 
       // Handle array fields
       const arrayFields = [
@@ -831,7 +832,7 @@ const jobsController = ({
         return res.status(404).json({ message: "Job not found" });
       }
 
-      console.log("Job updated successfully:", updatedJob._id);
+      logger.info("Job updated successfully", { jobId: updatedJob._id.toString() });
 
       return res.status(200).json({
         success: true,
@@ -840,7 +841,7 @@ const jobsController = ({
       });
 
     } catch (error) {
-      console.error("Update Job Error:", error);
+      logger.error(`Update job error: ${error.message}`, { stack: error.stack });
 
       if (error.name === 'ValidationError') {
         const validationErrors = {};
@@ -948,7 +949,7 @@ const jobsController = ({
         pagination,
       });
     } catch (error) {
-      console.error("Search Jobs Error:", error);
+      logger.error(`Search jobs error: ${error.message}`, { stack: error.stack });
       res.status(500).json({
         success: false,
         message: "Error searching jobs",

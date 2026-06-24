@@ -14,7 +14,7 @@ const envSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test', 'staging')
     .default('development'),
-  PORT: Joi.number().default(5000),
+  PORT: Joi.number().default(3000),
   
   // Database
   MONGO_URL: Joi.string().uri({ scheme: [/mongodb(\+srv)?/] }).optional(),
@@ -33,15 +33,20 @@ const envSchema = Joi.object({
   FRONTEND_URL: Joi.string().uri().optional(),
   
   // Email is optional for deployment. Runtime accepts EMAIL_* or SMTP_* credentials.
-  SMTP_HOST: Joi.string().optional(),
-  SMTP_PORT: Joi.number().optional(),
-  SMTP_USER: Joi.string().optional(),
-  SMTP_PASS: Joi.string().optional(),
-  EMAIL_USER: Joi.string().optional(),
-  EMAIL_PASS: Joi.string().optional(),
+  SMTP_HOST: Joi.string().allow('').optional(),
+  SMTP_PORT: Joi.number().allow('').optional(),
+  SMTP_USER: Joi.string().allow('').optional(),
+  SMTP_PASS: Joi.string().allow('').optional(),
+  EMAIL_USER: Joi.string().allow('').optional(),
+  EMAIL_PASS: Joi.string().allow('').optional(),
   
   // File Upload
-  MAX_FILE_SIZE: Joi.number().default(5242880), // 5MB
+  MAX_FILE_SIZE: Joi.number().default(26214400), // 25MB
+  CHAT_ATTACHMENT_MAX_SIZE: Joi.number().default(26214400),
+  PROFILE_IMAGE_MAX_SIZE: Joi.number().default(10485760),
+  COMPANY_LOGO_MAX_SIZE: Joi.number().default(10485760),
+  BLOG_IMAGE_MAX_SIZE: Joi.number().default(26214400),
+  RESUME_MAX_SIZE: Joi.number().default(26214400),
   
   // Rate Limiting
   RATE_LIMIT_WINDOW: Joi.number().default(15), // minutes

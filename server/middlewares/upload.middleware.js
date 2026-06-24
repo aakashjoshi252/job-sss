@@ -45,6 +45,11 @@ const profileImageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const profileImageMimes = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 const profileImageStorage = multer.memoryStorage();
+const profileImageMaxSize = parseInt(process.env.PROFILE_IMAGE_MAX_SIZE || `${10 * 1024 * 1024}`, 10);
+const chatAttachmentMaxSize = parseInt(
+  process.env.CHAT_ATTACHMENT_MAX_SIZE || process.env.MAX_FILE_SIZE || `${25 * 1024 * 1024}`,
+  10
+);
 
 const profileImageFilter = (_req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -61,7 +66,7 @@ const profileImageFilter = (_req, file, cb) => {
 const uploadProfileImage = multer({
   storage: profileImageStorage,
   limits: {
-    fileSize: parseInt(process.env.PROFILE_IMAGE_MAX_SIZE || `${5 * 1024 * 1024}`, 10),
+    fileSize: profileImageMaxSize,
     files: 1,
   },
   fileFilter: profileImageFilter,
@@ -99,7 +104,7 @@ const chatAttachmentFilter = (_req, file, cb) => {
 const uploadChatAttachment = multer({
   storage: chatAttachmentStorage,
   limits: {
-    fileSize: parseInt(process.env.CHAT_ATTACHMENT_MAX_SIZE || `${20 * 1024 * 1024}`, 10),
+    fileSize: chatAttachmentMaxSize,
     files: 1,
   },
   fileFilter: chatAttachmentFilter,
@@ -112,8 +117,8 @@ const handleMulterError = (err, req, res, next) => {
       return res.status(400).json({
         success: false,
         message: req.baseUrl?.includes("/chat")
-          ? `File size too large. Maximum size is ${Math.round(parseInt(process.env.CHAT_ATTACHMENT_MAX_SIZE || `${20 * 1024 * 1024}`, 10) / (1024 * 1024))}MB.`
-          : "File size too large. Maximum size is 5MB.",
+          ? `File size too large. Maximum size is ${Math.round(chatAttachmentMaxSize / (1024 * 1024))}MB.`
+          : `File size too large. Maximum size is ${Math.round(profileImageMaxSize / (1024 * 1024))}MB.`,
       });
     }
     return res.status(400).json({

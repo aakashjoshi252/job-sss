@@ -114,7 +114,6 @@ const ATSBoard = () => {
 
     try {
       await applicationApi.patch(`/${draggableId}/status`, { status: destination.droppableId });
-      console.log(`Application ${draggableId} moved to ${destination.droppableId}`);
     } catch (error) {
       console.error('Error updating status:', error);
       setError('Failed to update application status. Please try again.');
@@ -539,7 +538,6 @@ const ATSBoard = () => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Message candidate:', selectedApplication.candidate);
                     setSelectedApplication(null);
                   }}
                   className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"

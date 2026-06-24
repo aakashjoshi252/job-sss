@@ -122,12 +122,10 @@ export default function ResumeForm() {
 
         onSubmit: (values, { setSubmitting }) => {
             setSubmitting(true);
-            console.log("Submitting resume:", values);
             resumeApi
                 .post(`/create`, values)
                 .then((response) => {
-                    alert("💎 Resume Saved Successfully!");
-                    console.log("Response:", response.data);
+                    alert("Resume saved successfully!");
                     const savedResume = response.data?.data || response.data;
                     if (savedResume?._id) {
                         dispatch(setResume(savedResume));

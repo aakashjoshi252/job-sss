@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import html2pdf from "html2pdf.js";
 import toast from "react-hot-toast";
 import { BarChart3, Download, FileSpreadsheet, FileText, Save } from "lucide-react";
 import { adminApi } from "../../api/api";
@@ -78,17 +77,23 @@ export default function Reports() {
     );
   };
 
-  const exportPdf = () => {
+  const exportPdf = async () => {
     if (!reportRef.current) return;
-    html2pdf()
-      .set({
-        filename: `admin-report-${report.periodDays}-days.pdf`,
-        margin: 10,
-        html2canvas: { scale: 2 },
-        jsPDF: { format: "a4", orientation: "portrait" },
-      })
-      .from(reportRef.current)
-      .save();
+
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      await html2pdf()
+        .set({
+          filename: `admin-report-${report.periodDays}-days.pdf`,
+          margin: 10,
+          html2canvas: { scale: 2 },
+          jsPDF: { format: "a4", orientation: "portrait" },
+        })
+        .from(reportRef.current)
+        .save();
+    } catch (error) {
+      toast.error(error.message || "Unable to export PDF");
+    }
   };
 
   const saveSnapshot = async () => {

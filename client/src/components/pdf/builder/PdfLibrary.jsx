@@ -31,8 +31,6 @@ const ResumeLibrary = () => {
   const loggedUser = useSelector((state) => state.auth.user);
   const userId = loggedUser?._id;
   const navigate = useNavigate();
-  
-  console.log("Current userId:", userId);
 
   /* ================= FETCH RESUMES ================= */
   const fetchResumes = async () => {
@@ -45,8 +43,6 @@ const ResumeLibrary = () => {
       setLoading(true);
       setError(null);
       const res = await pdfApi.get(`/${userId}/data`);
-      
-      console.log("Response:", res.data);
       
       // Handle different response structures
       if (res.data && res.data.message && !res.data.data) {

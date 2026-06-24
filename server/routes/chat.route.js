@@ -10,6 +10,9 @@ router.use(protect);
 
 // ============== CHAT ROUTES ==============
 
+// Get all chats for current user.
+router.get("/", chatController.getUserChats);
+
 // Create or get existing chat between users (only with candidates)
 router.post("/create", chatController.createOrGetChat);
 

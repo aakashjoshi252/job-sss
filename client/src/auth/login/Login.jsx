@@ -74,7 +74,6 @@ export default function Login() {
             navigate("/recruiter/company/registration");
           }
         } catch (companyErr) {
-          console.log("No company found or error fetching company:", companyErr);
           dispatch(setCompanyError(translateApiError(companyErr, t, "jobNotFound") || t("login.errors.companyNotFound")));
           navigate("/recruiter/company/registration");
         }

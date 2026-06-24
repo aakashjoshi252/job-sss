@@ -120,9 +120,6 @@ export default function CompanyRegistration() {
         return;
       }
 
-      console.log("Submitting values:", values);
-      console.log("Branches:", branches);
-
       const formData = new FormData();
 
       // File field
@@ -150,17 +147,9 @@ export default function CompanyRegistration() {
       formData.append("branches", JSON.stringify(branches));
       formData.append("socialMedia", JSON.stringify(values.socialMedia));
 
-      // Debug: Log what's being sent
-      console.log("FormData contents:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
-
       const response = await companyApi.post("/register", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      console.log("Response:", response.data);
 
       alert(response.data.message);
       localStorage.setItem("companyRegistered", "true");
@@ -172,7 +161,6 @@ export default function CompanyRegistration() {
       const missingFields = error.response?.data?.missing;
 
       if (missingFields) {
-        console.log("Missing fields:", missingFields);
         const missing = Object.entries(missingFields)
           .filter(([key, value]) => value === true)
           .map(([key]) => key);

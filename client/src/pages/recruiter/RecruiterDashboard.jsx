@@ -25,6 +25,17 @@ import {
 import { GiDiamondRing } from "react-icons/gi";
 import UserAvatar from "../../components/ui/UserAvatar";
 
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+const debugLog = (...args) => {
+  if (DEBUG_MODE) console.log(...args);
+};
+const debugWarn = (...args) => {
+  if (DEBUG_MODE) console.warn(...args);
+};
+const debugError = (...args) => {
+  if (DEBUG_MODE) console.error(...args);
+};
+
 export default function RecruiterDashboard() {
   const { token, user: loggedUser, isAuthenticated, isLoading: authLoading } = useSelector((state) => state.auth);
   const company = useSelector((state) => state.company.data);
@@ -54,12 +65,12 @@ export default function RecruiterDashboard() {
         setLoading(true);
         setError(null);
 
-        console.log("🔍 Fetching dashboard data...");
-        console.log("User ID:", loggedUser?._id);
-        console.log("Token exists:", !!token);
+        debugLog("Fetching dashboard data");
+        debugLog("User ID:", loggedUser?._id);
+        debugLog("Token exists:", !!token);
 
         if (!loggedUser?._id || !token) {
-          console.error("❌ No user ID or token found");
+          debugError("No user ID or token found");
           setError("Please log in to view dashboard");
           setLoading(false);
           return;
@@ -81,7 +92,7 @@ export default function RecruiterDashboard() {
           const statsData = statsRes.value.data.data?.stats || statsRes.value.data.data || statsRes.value.data;
           if (statsData && Object.keys(statsData).length > 0) {
             setStats(statsData);
-            console.log("✅ Stats set:", statsData);
+            debugLog("Stats set:", statsData);
           } else {
             setStats({
               totalJobs: 0,
@@ -96,7 +107,7 @@ export default function RecruiterDashboard() {
             });
           }
         } else {
-          console.warn("⚠️ Stats API failed:", statsRes.status === 'rejected' ? statsRes.reason : 'No data');
+          debugWarn("Stats API failed:", statsRes.status === 'rejected' ? statsRes.reason : 'No data');
           setStats({
             totalJobs: 0,
             totalApplications: 0,
@@ -114,7 +125,7 @@ export default function RecruiterDashboard() {
         if (jobsRes.status === 'fulfilled' && jobsRes.value?.data) {
           const jobs = jobsRes.value.data.data || jobsRes.value.data || [];
           setRecentJobs(Array.isArray(jobs) ? jobs.slice(0, 5) : []);
-          console.log("✅ Jobs set:", jobs.length || 0);
+          debugLog("Jobs set:", jobs.length || 0);
 
           // Calculate top performing jobs
           const topPerformingJobs = (Array.isArray(jobs) ? jobs : [])
@@ -126,7 +137,7 @@ export default function RecruiterDashboard() {
             .slice(0, 5);
           setTopJobs(topPerformingJobs);
         } else {
-          console.warn("⚠️ Jobs API failed");
+          debugWarn("Jobs API failed");
           setRecentJobs([]);
           setTopJobs([]);
         }
@@ -135,9 +146,9 @@ export default function RecruiterDashboard() {
         if (interviewsRes.status === 'fulfilled' && interviewsRes.value?.data) {
           const interviews = interviewsRes.value.data.data || interviewsRes.value.data || [];
           setUpcomingInterviews(Array.isArray(interviews) ? interviews : []);
-          console.log("✅ Interviews set:", interviews.length || 0);
+          debugLog("Interviews set:", interviews.length || 0);
         } else {
-          console.warn("⚠️ Interviews API failed");
+          debugWarn("Interviews API failed");
           setUpcomingInterviews([]);
         }
 
@@ -145,9 +156,9 @@ export default function RecruiterDashboard() {
         if (applicationsRes.status === 'fulfilled' && applicationsRes.value?.data) {
           const applications = applicationsRes.value.data.data || applicationsRes.value.data || [];
           setRecentApplications(Array.isArray(applications) ? applications : []);
-          console.log("✅ Applications set:", applications.length || 0);
+          debugLog("Applications set:", applications.length || 0);
         } else {
-          console.warn("⚠️ Applications API failed");
+          debugWarn("Applications API failed");
           setRecentApplications([]);
         }
 
@@ -158,7 +169,7 @@ export default function RecruiterDashboard() {
         }
 
       } catch (err) {
-        console.error("❌ Dashboard error:", err);
+        debugError("Dashboard error:", err);
         setError(err.message || "Failed to load dashboard data");
         // Set default values
         setStats({
@@ -179,17 +190,17 @@ export default function RecruiterDashboard() {
         setSubscriptionSummary(null);
       } finally {
         setLoading(false);
-        console.log("🏁 Loading complete");
+        debugLog("Loading complete");
       }
     };
 
     if (authLoading) {
-      console.log("⏳ Auth is still loading...");
+      debugLog("Auth is still loading...");
       return;
     }
 
     if (!isAuthenticated || !loggedUser?._id || !token) {
-      console.log("❌ User not authenticated");
+      debugLog("User not authenticated");
       setError("Please log in to view dashboard");
       setLoading(false);
       return;

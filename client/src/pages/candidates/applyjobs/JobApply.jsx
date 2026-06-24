@@ -114,13 +114,9 @@ export default function JobApply() {
       coverLetter: coverLetter.trim(),
     };
 
-    console.log("Submitting application:", applicationData);
-
     try {
       setLoading(true);
-      const response = await applicationApi.post("/apply", applicationData);
-      
-      console.log("Application response:", response.data);
+      await applicationApi.post("/apply", applicationData);
       
       alert("Application Submitted Successfully!");
       navigate("/candidate/applications");

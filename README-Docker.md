@@ -1,287 +1,273 @@
-# Docker Setup
+# Docker Production Setup for Jewelcancy
 
-This project is containerized as a MERN stack with:
+Domain: `www.jewelcancy.com`
 
-- `frontend`: React/Vite production build served by Nginx
-- `backend`: Node.js/Express API and Socket.IO server
-- `mongodb`: MongoDB 7 with persistent volumes
-- optional `redis`: commented in `docker-compose.yml` for future cache/session use
+Support email: `support@jewelcancy.com`
 
-## Files
+This setup runs the MERN Job Placement platform with:
+
+- `router`: public Nginx reverse proxy on ports `80` and `443`
+- `frontend`: React/Vite build served by an internal Nginx container
+- `backend`: Node.js/Express API and Socket.IO server on internal port `3000`
+- `mongodb`: internal MongoDB container
+- `certbot`: Let's Encrypt renewal sidecar
+
+Only the router is exposed publicly. The backend and MongoDB are private Docker network services.
+
+## Production Files
 
 ```text
 .
-├── .env
-├── .env.example
-├── .dockerignore
-├── docker-compose.yml
-├── docker-compose.dev.yml
-├── README-Docker.md
-├── client/
-│   ├── Dockerfile
-│   ├── .dockerignore
-│   └── nginx.conf
-└── server/
-    ├── Dockerfile
-    └── .dockerignore
+|-- docker-compose.prod.yml
+|-- docker-compose.yml
+|-- .env.example
+|-- .dockerignore
+|-- nginx/
+|   |-- nginx.conf
+|   `-- conf.d/default.conf
+|-- client/
+|   |-- Dockerfile
+|   |-- nginx.conf
+|   `-- .env.production.example
+`-- server/
+    |-- Dockerfile
+    `-- .dockerignore
 ```
 
-## Architecture
+## Routing Flow
 
-Production traffic flow:
+Browser traffic enters through the `router` container:
 
 ```text
-Browser
-  -> frontend container on host port 80
-  -> Nginx serves React files
-  -> Nginx proxies /api, /health, /uploads, /socket.io to backend:5000
-  -> backend connects to mongodb:27017 over the Docker network
+https://www.jewelcancy.com
+  -> router:443
+  -> frontend:8080
+  -> React/Vite app
 ```
 
-The frontend uses `VITE_API_URL=/api/v1` by default, so API calls stay same-origin through Nginx. Socket.IO uses the same origin and Nginx proxies websocket upgrades at `/socket.io/`.
+API traffic stays on the same domain:
+
+```text
+https://www.jewelcancy.com/api/v1/*
+  -> router:443
+  -> backend:3000/api/v1/*
+```
+
+Socket.IO traffic uses the same origin and path:
+
+```text
+https://www.jewelcancy.com/socket.io/*
+  -> router:443
+  -> backend:3000/socket.io/*
+```
+
+MongoDB is only reachable inside Docker:
+
+```text
+backend:3000 -> mongodb:27017
+```
+
+## Redirects
+
+The router redirects all public variants to the canonical HTTPS www domain:
+
+```text
+http://www.jewelcancy.com  -> https://www.jewelcancy.com
+http://jewelcancy.com      -> https://www.jewelcancy.com
+https://jewelcancy.com     -> https://www.jewelcancy.com
+```
+
+## React Router Refresh
+
+The frontend Nginx config rewrites unknown browser routes to `index.html`, so refresh works for:
+
+- `/candidate/dashboard`
+- `/recruiter/dashboard`
+- `/admin/dashboard`
+- `/blog/:slug`
 
 ## Environment Setup
 
-Use `.env.example` as the template for `.env`.
+Create a production `.env` from the template:
 
-Important production values to replace:
+```bash
+cp .env.example .env
+```
 
-- `JWT_SECRET`: use a random secret of at least 32 characters
-- `MONGO_INITDB_ROOT_PASSWORD`: use a strong password before first MongoDB startup
-- `CLIENT_URL` and `FRONTEND_URL`: public frontend URL, for example `https://jobs.example.com`
-- `ALLOWED_ORIGINS`: comma-separated allowed browser origins
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-- `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
-- `VITE_RAZORPAY_KEY_ID`: public Razorpay key used by the browser
-
-For same-domain production through Nginx, keep:
+Required production values:
 
 ```env
-VITE_API_URL=/api/v1
-VITE_SOCKET_URL=
+NODE_ENV=production
+PORT=3000
+MONGODB_URI=mongodb://mongodb:27017/jobplacements
+JWT_SECRET=replace_with_a_random_64_character_secret
+CLIENT_URL=https://www.jewelcancy.com
+FRONTEND_URL=https://www.jewelcancy.com
+PRODUCTION_URL=https://www.jewelcancy.com
+SUPPORT_EMAIL=support@jewelcancy.com
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+VITE_API_URL=https://www.jewelcancy.com/api/v1
+VITE_SOCKET_URL=https://www.jewelcancy.com
+VITE_RAZORPAY_KEY_ID=
+VITE_SUPPORT_EMAIL=support@jewelcancy.com
 ```
 
-For separate API and frontend domains, set:
+Do not put backend secrets into frontend `VITE_*` variables. Only `VITE_RAZORPAY_KEY_ID` is public.
 
-```env
-VITE_API_URL=https://api.example.com/api/v1
-VITE_SOCKET_URL=https://api.example.com
-CLIENT_URL=https://jobs.example.com
-FRONTEND_URL=https://jobs.example.com
-ALLOWED_ORIGINS=https://jobs.example.com
+## DNS Setup
+
+Point both apex and www to the VPS public IP.
+
+Option A:
+
+```text
+Type: A
+Host: @
+Value: VPS_PUBLIC_IP
+
+Type: A
+Host: www
+Value: VPS_PUBLIC_IP
 ```
 
-## Production Commands
+Option B:
 
-Build images:
+```text
+Type: A
+Host: @
+Value: VPS_PUBLIC_IP
+
+Type: CNAME
+Host: www
+Value: jewelcancy.com
+```
+
+Wait until DNS resolves before requesting the Let's Encrypt certificate:
 
 ```bash
-docker compose build
+nslookup jewelcancy.com
+nslookup www.jewelcancy.com
 ```
 
-Start:
+## Build and Run
+
+Build:
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.prod.yml build
 ```
 
-Stop:
+Run:
 
 ```bash
-docker compose down
-```
-
-Restart:
-
-```bash
-docker compose restart
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 Logs:
 
 ```bash
-docker compose logs -f
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f mongodb
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
-Check health:
+Restart:
 
 ```bash
-docker compose ps
-curl http://localhost/health
-curl http://localhost/backend-health
-curl http://localhost/nginx-health
+docker compose -f docker-compose.prod.yml restart
 ```
 
-Remove containers but keep MongoDB data:
+Stop:
 
 ```bash
-docker compose down
+docker compose -f docker-compose.prod.yml down
 ```
 
-Remove containers and MongoDB volumes:
+Check router config:
 
 ```bash
-docker compose down -v
+docker compose -f docker-compose.prod.yml exec router nginx -t
 ```
 
-## Development Commands
+## Let's Encrypt First-Time Certificate
 
-The dev compose file runs Vite hot reload and Nodemon with source bind mounts:
+On first startup, the router creates a one-day self-signed certificate so Nginx can start. After DNS points to the VPS and the stack is running, replace it with a real Let's Encrypt certificate:
 
 ```bash
-docker compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.prod.yml run --rm --entrypoint sh certbot -c "rm -rf /etc/letsencrypt/live/www.jewelcancy.com /etc/letsencrypt/archive/www.jewelcancy.com /etc/letsencrypt/renewal/www.jewelcancy.com.conf && certbot certonly --webroot --webroot-path /var/www/certbot --email support@jewelcancy.com --agree-tos --no-eff-email --force-renewal -d www.jewelcancy.com -d jewelcancy.com"
 ```
 
-Open:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:5000`
-- MongoDB: `localhost:27017`
-
-Stop dev:
+Reload the router after the certificate is issued:
 
 ```bash
-docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.prod.yml exec router nginx -s reload
 ```
 
-## Ports
+The `certbot` service checks renewal every 12 hours. The router reloads every 6 hours so renewed certificates are picked up automatically.
 
-Production defaults:
-
-- Frontend/Nginx: host `80` -> container `8080`
-- Backend/API/Socket.IO: host `5000` -> container `5000`
-- MongoDB: host `27017` -> container `27017`
-
-Override host ports in `.env`:
-
-```env
-FRONTEND_PORT=8080
-BACKEND_PORT=5000
-MONGODB_PORT=27017
-```
-
-## Volumes and Persistence
-
-MongoDB data is stored in named volumes:
-
-- `mongodb_data`
-- `mongodb_config`
-
-Backend upload and log folders are bind-mounted:
-
-- `./server/uploads:/app/uploads`
-- `./server/logs:/app/logs`
-
-Cloudinary uploads use memory storage and Cloudinary credentials, so no local upload persistence is required for Cloudinary-backed assets. Local static files under `server/uploads` remain available through the bind mount.
-
-## MongoDB Backup
-
-Create a compressed backup:
+Manual renewal test:
 
 ```bash
-docker compose exec mongodb mongodump \
-  -u "$MONGO_INITDB_ROOT_USERNAME" \
-  -p "$MONGO_INITDB_ROOT_PASSWORD" \
-  --authenticationDatabase admin \
-  --archive=/tmp/jobplacements.archive \
-  --gzip
-
-docker compose cp mongodb:/tmp/jobplacements.archive ./jobplacements.archive
+docker compose -f docker-compose.prod.yml run --rm --entrypoint certbot certbot renew --dry-run
 ```
 
-Restore:
+## Health Checks
+
+Router:
 
 ```bash
-docker compose cp ./jobplacements.archive mongodb:/tmp/jobplacements.archive
-docker compose exec mongodb mongorestore \
-  -u "$MONGO_INITDB_ROOT_USERNAME" \
-  -p "$MONGO_INITDB_ROOT_PASSWORD" \
-  --authenticationDatabase admin \
-  --archive=/tmp/jobplacements.archive \
-  --gzip \
-  --drop
+curl http://localhost/router-health
 ```
 
-## Socket.IO Notes
+Backend through router:
 
-Nginx proxies websocket upgrades at `/socket.io/` with:
+```bash
+curl https://www.jewelcancy.com/health
+curl https://www.jewelcancy.com/backend-health
+```
 
-- `Upgrade`
-- `Connection`
-- `X-Forwarded-*`
-- extended read/send timeouts
+Docker services:
 
-The backend already listens on `0.0.0.0`, enables websocket and polling transports, and uses CORS from `CLIENT_URL`, `FRONTEND_URL`, and `ALLOWED_ORIGINS`.
+```bash
+docker compose -f docker-compose.prod.yml ps
+```
 
 ## Security Notes
 
-- Backend runs as the non-root `node` user.
-- Frontend uses the unprivileged Nginx image and maps host port `80` to container port `8080`.
-- Docker build contexts exclude `node_modules`, `dist`, `build`, logs, uploads, `.git`, and env files.
-- Nginx adds security headers and immutable caching for static assets.
-- Secrets are loaded from `.env`, which is ignored by git.
-- Replace all placeholder secrets before using production payment, auth, email, or upload features.
-
-## CI/CD Image Tagging
-
-Use commit SHA or release tags:
-
-```bash
-IMAGE_TAG=$(git rev-parse --short HEAD) docker compose build
-IMAGE_TAG=$(git rev-parse --short HEAD) docker compose push
-```
-
-Suggested tags:
-
-- `latest` for local builds only
-- Git SHA for every CI build
-- Semver release tag for production releases, for example `v1.4.0`
-
-The Dockerfiles copy `package*.json` before source files so dependency layers are cached unless dependencies change.
-
-## VPS Deployment Checklist
-
-1. Install Docker Engine and Docker Compose plugin on Ubuntu.
-2. Clone the repository.
-3. Create `.env` from `.env.example`.
-4. Set real domain URLs and secrets.
-5. Open firewall ports `80`, optionally `443`, and only expose `5000`/`27017` if you explicitly need remote access.
-6. Run `docker compose build`.
-7. Run `docker compose up -d`.
-8. Check `docker compose ps` and `docker compose logs -f`.
-9. Put TLS in front of the frontend with a host reverse proxy, load balancer, or a companion certificate proxy.
-
-This setup works on VPS, AWS EC2, DigitalOcean Droplets, Azure VM, Google Cloud VM, and any Linux host with Docker Compose.
+- HTTPS is enforced at the router.
+- Apex domain traffic redirects to `https://www.jewelcancy.com`.
+- Backend and MongoDB are not published to the host in production.
+- Nginx forwards `X-Forwarded-*` headers and the backend enables `trust proxy` in production.
+- CORS allows `https://www.jewelcancy.com`, `https://jewelcancy.com`, and `http://localhost:5173`.
+- API requests are rate limited at Nginx and again in Express.
+- Socket.IO supports websocket upgrade and polling fallback through `/socket.io/`.
+- `client_max_body_size` is `25M` for resumes, profile images, chat attachments, documents, and blog images.
+- Static frontend assets are cached for one year with immutable cache headers.
+- `.env` is ignored by git; do not commit secrets.
 
 ## Troubleshooting
 
-If the backend exits immediately, check:
+If the router keeps restarting, check whether the certificate files exist:
 
 ```bash
-docker compose logs backend
+docker compose -f docker-compose.prod.yml logs router
 ```
 
-Common causes:
+If Let's Encrypt fails, confirm:
 
-- `JWT_SECRET` is shorter than 32 characters in production
-- Razorpay production credentials are missing
-- Mongo credentials in `.env` were changed after the MongoDB volume was already initialized
+- DNS points to the VPS public IP.
+- Ports `80` and `443` are open in the VPS firewall/security group.
+- No other service is using ports `80` or `443`.
+- `http://www.jewelcancy.com/.well-known/acme-challenge/test` reaches the router.
 
-If Mongo auth fails after changing credentials, recreate the MongoDB volumes:
+If frontend API calls fail, rebuild after changing `VITE_*` values:
 
 ```bash
-docker compose down -v
-docker compose up -d
+docker compose -f docker-compose.prod.yml build frontend
+docker compose -f docker-compose.prod.yml up -d frontend router
 ```
 
-If frontend API calls go to the wrong URL, rebuild the frontend after changing `VITE_*` values:
-
-```bash
-docker compose build frontend
-docker compose up -d frontend
-```
-
-If Socket.IO fails behind a cloud firewall or reverse proxy, make sure `/socket.io/` supports websocket upgrades and forwards `Upgrade` and `Connection` headers.
+If Socket.IO fails, check browser devtools and router logs for `/socket.io/` requests. The router forwards `Upgrade`, `Connection`, `Authorization`, credentials, and `X-Forwarded-*` headers.

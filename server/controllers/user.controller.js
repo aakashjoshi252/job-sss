@@ -12,6 +12,26 @@ const path = require("path");
 const SAFE_USER_SELECT = "-password -emailVerificationOTP -emailVerificationOTPExpires -profilePicturePublicId";
 const PROFILE_FIELDS = ["username", "phone", "location", "website", "bio"];
 
+const getJwtCookieMaxAge = () => {
+  const explicitMaxAge = Number(process.env.JWT_COOKIE_MAX_AGE_MS);
+  if (Number.isFinite(explicitMaxAge) && explicitMaxAge > 0) return explicitMaxAge;
+
+  const expiry = String(process.env.JWT_EXPIRE || "7d").trim();
+  const match = expiry.match(/^(\d+)\s*([smhd])$/i);
+  if (!match) return 7 * 24 * 60 * 60 * 1000;
+
+  const value = Number(match[1]);
+  const unit = match[2].toLowerCase();
+  const multipliers = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  };
+
+  return value * multipliers[unit];
+};
+
 const getMailAuth = () => ({
   user: process.env.EMAIL_USER || process.env.SMTP_USER,
   pass: process.env.EMAIL_PASS || process.env.SMTP_PASS,
@@ -328,7 +348,7 @@ const userController = {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: getJwtCookieMaxAge(),
       });
 
       // Prepare user response

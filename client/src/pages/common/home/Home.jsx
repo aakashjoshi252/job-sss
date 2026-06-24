@@ -247,8 +247,6 @@ export default function Home() {
 
     });
 
-    console.log("Stats:", { jobs: jobsCount, companies: companiesCount, candidates: candidatesCount });
-
     // Handle featured jobs
     const featuredData = featuredJobsRes.data?.success ? featuredJobsRes.data.data :
                         Array.isArray(featuredJobsRes.data) ? featuredJobsRes.data :
@@ -332,8 +330,6 @@ export default function Home() {
   };
 
   const handleCompanyClick = (companyId, companyName) => {
-    console.log("Company click - ID:", companyId, "Name:", companyName);
-
     // Validate companyId
     if (companyId && typeof companyId === 'string' && companyId.trim() !== '') {
       // Check if it's a valid MongoDB ObjectId (24 hex chars)
@@ -680,7 +676,6 @@ function FeaturedJobCard({ job, onApply, formatSalary, getDaysAgo, isAuthenticat
 
   const handleSaveJob = (e) => {
     e.stopPropagation();
-    console.log("Save job:", job._id);
   };
 
   return (

@@ -76,23 +76,18 @@ const parseOriginList = (value = "") =>
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-const productionOrigin = "https://jobs-75wy.onrender.com";
 const developmentOrigins = nodeEnv === "production"
   ? []
   : parseOriginList(process.env.DEV_ALLOWED_ORIGINS || process.env.CLIENT_URL);
 
-const isLocalOrigin = (origin = "") =>
-  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/i.test(origin);
-
 const allowedOrigins = [
-  productionOrigin,
   ...developmentOrigins,
-  "https://jobs-75wy.onrender.com",
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
   process.env.PRODUCTION_URL,
+  ...parseOriginList(process.env.LEGACY_ALLOWED_ORIGINS),
   ...parseOriginList(process.env.ALLOWED_ORIGINS),
-].filter((origin) => origin && (nodeEnv !== "production" || !isLocalOrigin(origin)));
+].filter(Boolean);
 
 const normalizeOrigin = (origin) => origin?.replace(/\/$/, "");
 

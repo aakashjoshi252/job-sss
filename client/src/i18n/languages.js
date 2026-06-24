@@ -20,7 +20,7 @@ export const supportedLanguages = [
   { code: "kok", label: "Konkani", nativeLabel: "कोंकणी", dir: "ltr" },
   { code: "mni", label: "Manipuri", nativeLabel: "মৈতৈলোন্", dir: "ltr" },
   { code: "ne", label: "Nepali", nativeLabel: "नेपाली", dir: "ltr" },
-  { code: "brx", label: "Bodo", nativeLabel: "बड़ो", dir: "ltr" },
+  { code: "brx", label: "Bodo", nativeLabel: "बरʼ", dir: "ltr" },
   { code: "doi", label: "Dogri", nativeLabel: "डोगरी", dir: "ltr" },
   { code: "ks", label: "Kashmiri", nativeLabel: "کٲشُر", dir: "rtl" },
   { code: "mai", label: "Maithili", nativeLabel: "मैथिली", dir: "ltr" },

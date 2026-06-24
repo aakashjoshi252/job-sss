@@ -23,11 +23,21 @@ if (
 // Use memory storage (no multer-storage-cloudinary needed)
 const storage = multer.memoryStorage();
 
+const parseUploadSize = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const profileImageMaxSize = parseUploadSize(process.env.PROFILE_IMAGE_MAX_SIZE, 10 * 1024 * 1024);
+const companyLogoMaxSize = parseUploadSize(process.env.COMPANY_LOGO_MAX_SIZE, 10 * 1024 * 1024);
+const blogImageMaxSize = parseUploadSize(process.env.BLOG_IMAGE_MAX_SIZE || process.env.MAX_FILE_SIZE, 25 * 1024 * 1024);
+const resumeMaxSize = parseUploadSize(process.env.RESUME_MAX_SIZE || process.env.MAX_FILE_SIZE, 25 * 1024 * 1024);
+
 // Multer upload configuration for profile pictures
 const uploadProfilePicture = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: profileImageMaxSize,
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -45,7 +55,7 @@ const uploadProfilePicture = multer({
 // Multer configuration for company logos
 const uploadCompanyLogo = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: companyLogoMaxSize },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'image/jpeg',
@@ -65,7 +75,7 @@ const uploadCompanyLogo = multer({
 // Multer configuration for blog images
 const uploadBlogImage = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: blogImageMaxSize },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'image/jpeg',
@@ -87,7 +97,7 @@ const uploadBlogImage = multer({
 // Multer configuration for resumes
 const uploadResume = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: resumeMaxSize },
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'application/pdf',

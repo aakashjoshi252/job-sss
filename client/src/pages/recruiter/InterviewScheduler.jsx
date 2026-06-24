@@ -57,7 +57,6 @@ const InterviewScheduler = () => {
       setError(null);
       
       const res = await interviewsApi.get(`/recruiter/${loggedUser?._id}`);
-      console.log("Interviews API:", res.data);
       
       const interviewsData = res.data?.data || res.data || [];
       setInterviews(Array.isArray(interviewsData) ? interviewsData : []);

@@ -3,6 +3,13 @@ import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
 
 const SocketContext = createContext();
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === "true";
+const socketLog = (...args) => {
+  if (DEBUG_MODE) console.log(...args);
+};
+const socketWarn = (...args) => {
+  if (DEBUG_MODE) console.warn(...args);
+};
 
 export const useSocket = () => {
   const context = useContext(SocketContext);
@@ -49,20 +56,16 @@ export const SocketProvider = ({ children }) => {
   const reconnectTimeoutRef = useRef(null);
   const maxReconnectAttempts = 5;
 
-  // Request browser notification permission
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("✅ Notification permission granted");
-        }
-      });
-    }
-  }, []);
-
   // Show browser notification
-  const showNotification = useCallback((title, body, icon = null, onClick = null) => {
-    if (Notification.permission === "granted" && document.hidden) {
+  const showNotification = useCallback(async (title, body, icon = null, onClick = null) => {
+    if (!("Notification" in window) || !document.hidden) return;
+
+    let permission = Notification.permission;
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission === "granted") {
       const notification = new Notification(title, {
         body: body,
         icon: icon || "/logo192.png",
@@ -84,7 +87,7 @@ export const SocketProvider = ({ children }) => {
   // Connect to socket
   const connectSocket = useCallback(() => {
     if (!user?._id) {
-      console.log("No user ID, skipping socket connection");
+      socketLog("No user ID, skipping socket connection");
       return null;
     }
 
@@ -94,7 +97,7 @@ export const SocketProvider = ({ children }) => {
 
     try {
       const SOCKET_URL = getSocketURL();
-      console.log(`🔌 Connecting to Socket.IO: ${SOCKET_URL}`);
+      socketLog(`Connecting to Socket.IO: ${SOCKET_URL}`);
 
       const newSocket = io(SOCKET_URL, {
         withCredentials: true,
@@ -111,7 +114,7 @@ export const SocketProvider = ({ children }) => {
 
       // Connection handlers
       newSocket.on("connect", () => {
-        console.log("✅ Connected to socket server, ID:", newSocket.id);
+        socketLog("Connected to socket server, ID:", newSocket.id);
         setIsConnected(true);
         setConnectionError(null);
         setReconnectAttempts(0);
@@ -120,14 +123,14 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("connect_error", (error) => {
-        console.error("❌ Socket connection error:", error.message);
+        socketWarn("Socket connection error:", error.message);
         setConnectionError(error.message);
         setIsConnected(false);
         setReconnectAttempts(prev => prev + 1);
       });
 
       newSocket.on("disconnect", (reason) => {
-        console.log("🔌 Socket disconnected:", reason);
+        socketLog("Socket disconnected:", reason);
         setIsConnected(false);
         
         if (reason === "io server disconnect") {
@@ -138,7 +141,7 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("reconnect", (attemptNumber) => {
-        console.log(`🔄 Socket reconnected after ${attemptNumber} attempts`);
+        socketLog(`Socket reconnected after ${attemptNumber} attempts`);
         setIsConnected(true);
         setConnectionError(null);
         newSocket.emit("userOnline");
@@ -146,7 +149,7 @@ export const SocketProvider = ({ children }) => {
 
       // User status handlers (matching your backend)
       newSocket.on("userStatusChange", ({ userId, status }) => {
-        console.log(`User ${userId} is now ${status}`);
+        socketLog(`User ${userId} is now ${status}`);
         setOnlineUsers(prev => {
           if (status === "online") {
             return [...new Set([...prev, userId])];
@@ -158,27 +161,27 @@ export const SocketProvider = ({ children }) => {
 
       // Get online users list
       newSocket.on("onlineUsers", (users) => {
-        console.log("Online users:", users);
+        socketLog("Online users:", users);
         setOnlineUsers(users || []);
       });
 
       // Message error handler
       newSocket.on("messageError", (error) => {
-        console.error("Message error:", error);
+        socketWarn("Message error:", error);
         // You can show a toast notification here
       });
 
       // Message sent confirmation
       newSocket.on("messageSent", ({ success, messageId, timestamp }) => {
         if (success) {
-          console.log("Message sent successfully:", messageId);
+          socketLog("Message sent successfully:", messageId);
         }
       });
 
       // Joined chat confirmation
       newSocket.on("joinedChat", ({ chatId, success }) => {
         if (success) {
-          console.log("Joined chat:", chatId);
+          socketLog("Joined chat:", chatId);
         }
       });
 
@@ -187,7 +190,7 @@ export const SocketProvider = ({ children }) => {
       
       return newSocket;
     } catch (error) {
-      console.error("Failed to create socket connection:", error);
+      socketWarn("Failed to create socket connection:", error);
       setConnectionError(error.message);
       setIsConnected(false);
       return null;
@@ -197,7 +200,7 @@ export const SocketProvider = ({ children }) => {
   // Disconnect socket
   const disconnectSocket = useCallback(() => {
     if (socketRef.current) {
-      console.log("Disconnecting socket...");
+      socketLog("Disconnecting socket...");
       window.dispatchEvent(new Event("chat:logout"));
       socketRef.current.disconnect();
       socketRef.current = null;
@@ -209,7 +212,7 @@ export const SocketProvider = ({ children }) => {
 
   // Reconnect socket
   const reconnectSocket = useCallback(() => {
-    console.log("Attempting to reconnect...");
+    socketLog("Attempting to reconnect...");
     disconnectSocket();
     
     if (reconnectTimeoutRef.current) {
@@ -231,7 +234,7 @@ export const SocketProvider = ({ children }) => {
       }
       return true;
     }
-    console.warn(`Cannot emit event "${event}", socket not connected`);
+    socketWarn(`Cannot emit event "${event}", socket not connected`);
     return false;
   }, [isConnected]);
 

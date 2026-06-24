@@ -20,6 +20,11 @@ tmp
 temp
 *.tmp
 *.log
+*.pem
+*.key
+nginx/certs
+nginx/letsencrypt
+nginx/certbot
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

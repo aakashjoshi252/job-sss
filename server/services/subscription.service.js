@@ -8,44 +8,56 @@ const { getRazorpayInstance } = require("../config/razorpay");
 
 const DEFAULT_SUBSCRIPTION_PLANS = [
   {
-    planName: "Basic",
-    price: 499,
+    planName: "Starter",
+    price: 599,
     currency: "INR",
     jobPostLimit: 10,
     duration: 1,
     durationType: "month",
     isUnlimited: false,
     isActive: true,
-    description: "10 job posts per calendar month",
+    description: "10 job posts per month",
     sortOrder: 10,
   },
   {
-    planName: "Standard",
-    price: 999,
+    planName: "Growth",
+    price: 1199,
     currency: "INR",
     jobPostLimit: 50,
     duration: 1,
     durationType: "month",
     isUnlimited: false,
     isActive: true,
-    description: "50 job posts per calendar month",
+    description: "50 job posts per month",
     sortOrder: 20,
   },
   {
-    planName: "Premium",
-    price: 2499,
+    planName: "Scale",
+    price: 4999,
+    currency: "INR",
+    jobPostLimit: 0,
+    duration: 6,
+    durationType: "months",
+    isUnlimited: true,
+    isActive: true,
+    description: "Unlimited job posts for 6 months",
+    sortOrder: 30,
+  },
+  {
+    planName: "Enterprise",
+    price: 12999,
     currency: "INR",
     jobPostLimit: 0,
     duration: 1,
-    durationType: "month",
+    durationType: "year",
     isUnlimited: true,
     isActive: true,
-    description: "Unlimited job posts for one calendar month",
-    sortOrder: 30,
+    description: "Unlimited job posts for 1 year",
+    sortOrder: 40,
   },
 ];
 
-const LEGACY_DEFAULT_PLAN_NAMES = ["Starter", "Growth", "Business", "Enterprise"];
+const LEGACY_DEFAULT_PLAN_NAMES = ["Basic", "Standard", "Premium", "Business"];
 
 class SubscriptionError extends Error {
   constructor({ code, message, status = 403 }) {

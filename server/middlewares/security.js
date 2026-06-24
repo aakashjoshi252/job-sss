@@ -215,7 +215,7 @@ const validateFileUpload = (req, res, next) => {
     ? process.env.ALLOWED_FILE_TYPES.split(',')
     : ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
 
-  const maxSize = parseInt(process.env.MAX_FILE_SIZE || '10485760'); // 10MB default
+  const maxSize = parseInt(process.env.MAX_FILE_SIZE || `${25 * 1024 * 1024}`, 10);
 
   const file = req.file || (req.files && req.files[0]);
 

@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   calculatePlanEndDate,
+  DEFAULT_SUBSCRIPTION_PLANS,
   getMonthKey,
   verifyRazorpaySignature,
 } = require("../../services/subscription.service");
@@ -32,5 +33,14 @@ describe("subscription service helpers", () => {
 
     expect(verifyRazorpaySignature({ orderId, paymentId, signature, secret })).toBe(true);
     expect(verifyRazorpaySignature({ orderId, paymentId, signature: "bad", secret })).toBe(false);
+  });
+
+  test("default plans match production recruiter pricing", () => {
+    expect(DEFAULT_SUBSCRIPTION_PLANS).toEqual([
+      expect.objectContaining({ price: 599, jobPostLimit: 10, duration: 1, durationType: "month", isUnlimited: false }),
+      expect.objectContaining({ price: 1199, jobPostLimit: 50, duration: 1, durationType: "month", isUnlimited: false }),
+      expect.objectContaining({ price: 4999, duration: 6, durationType: "months", isUnlimited: true }),
+      expect.objectContaining({ price: 12999, duration: 1, durationType: "year", isUnlimited: true }),
+    ]);
   });
 });
