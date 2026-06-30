@@ -7,7 +7,7 @@ Use this before every business launch or production redeploy.
 - Set `NODE_ENV=production` on the backend.
 - Set a strong `JWT_SECRET` with at least 32 characters.
 - Set `JWT_EXPIRE` and optionally `JWT_COOKIE_MAX_AGE_MS` to match the session policy.
-- Configure one MongoDB variable: `MONGO_URL` or `MONGODB_URI`.
+- Configure `MONGODB_URI` for the MongoDB connection. `MONGO_URL` is only a legacy fallback.
 - Use MongoDB Atlas or another TLS-enabled production MongoDB service.
 - Set `CLIENT_URL`, `FRONTEND_URL`, `PRODUCTION_URL`, and `ALLOWED_ORIGINS` to real HTTPS frontend origins only.
 - Set frontend build variables:

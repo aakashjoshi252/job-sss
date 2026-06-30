@@ -1337,7 +1337,7 @@ AUTH_RATE_LIMIT_MAX_REQUESTS=5
 #### Frontend `.env`
 
 ```env
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api/v1
 VITE_API_BASE_URL=http://localhost:3000
 VITE_API_VERSION=/api/v1
 VITE_ENABLE_API_VERSIONING=true

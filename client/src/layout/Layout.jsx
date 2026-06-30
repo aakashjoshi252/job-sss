@@ -6,7 +6,11 @@ import LocalizedMeta from '../components/i18n/LocalizedMeta';
 
 export default function Layout() {
   const location = useLocation();
-  const isFullBleedRoute = location.pathname === '/chat' || location.pathname === '/messages';
+  const isFullBleedRoute =
+    location.pathname === '/' ||
+    location.pathname === '/about' ||
+    location.pathname === '/chat' ||
+    location.pathname === '/messages';
 
   return (
     <div className="min-h-screen overflow-x-hidden flex flex-col bg-gray-100">

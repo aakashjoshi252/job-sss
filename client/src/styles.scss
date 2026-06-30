@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --jc-bg: #f8fafc;
+  --jc-panel: #ffffff;
+  --jc-ink: #111827;
+  --jc-muted: #64748b;
+  --jc-line: #e2e8f0;
+  --jc-brand: #0f766e;
+  --jc-brand-strong: #115e59;
+  --jc-gold: #b7791f;
+}
+
+.dark {
+  color-scheme: dark;
+  --jc-bg: #0f172a;
+  --jc-panel: #111827;
+  --jc-ink: #f8fafc;
+  --jc-muted: #94a3b8;
+  --jc-line: #243044;
+  --jc-brand: #2dd4bf;
+  --jc-brand-strong: #5eead4;
+  --jc-gold: #f6c453;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--jc-bg);
+  color: var(--jc-ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.jc-container {
+  width: min(1180px, calc(100% - 32px));
+  margin-inline: auto;
+}
+
+.jc-panel {
+  background: var(--jc-panel);
+  border: 1px solid var(--jc-line);
+  border-radius: 8px;
+}
+
+.jc-focus-ring:focus-visible {
+  outline: 3px solid rgba(20, 184, 166, 0.35);
+  outline-offset: 2px;
+}

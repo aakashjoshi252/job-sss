@@ -10,7 +10,7 @@ services:
     container_name: jewelcancy-frontend-dev
     restart: unless-stopped
     environment:
-      VITE_API_URL: ${DEV_VITE_API_URL:-http://localhost:5000}
+      VITE_API_URL: ${DEV_VITE_API_URL:-http://localhost:5000/api/v1}
       VITE_SOCKET_URL: ${DEV_VITE_SOCKET_URL:-http://localhost:5000}
       VITE_RAZORPAY_KEY_ID: ${VITE_RAZORPAY_KEY_ID:-}
       VITE_SUPPORT_EMAIL: ${VITE_SUPPORT_EMAIL:-support@jewelcancy.com}

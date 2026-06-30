@@ -12,10 +12,10 @@ const clearStoredAuth = () => {
   sessionStorage.removeItem("user");
 };
 
-const baseUrl = import.meta.env.VITE_API_URL || API_BASE_URL || "http://localhost:3000/api/v1";
+const baseUrl = API_BASE_URL;
 
 if (import.meta.env.DEV) {
-  console.log("API URL:", import.meta.env.VITE_API_URL || baseUrl);
+  console.log("API URL:", baseUrl);
 }
 
 const baseQuery = fetchBaseQuery({

@@ -1,455 +1,548 @@
-import { useState, useEffect } from "react";
-import { 
-  FaUsers, 
-  FaBuilding, 
-  FaHandshake, 
-  FaRocket, 
-  FaChartLine, 
-  FaGlobe,
-  FaCheckCircle,
-  FaQuoteLeft,
-  FaLinkedin,
-  FaTwitter,
-  FaEnvelope
-} from "react-icons/fa";
-import { MdWork, MdLocationOn, MdEmail } from "react-icons/md";
-import { GiDiamondRing, GiJewelCrown } from "react-icons/gi";
-import { VscGraphLine } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  CalendarDays,
+  Check,
+  Clock3,
+  Gem,
+  Handshake,
+  MapPin,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  Trophy,
+  UserCheck,
+  Users,
+  Zap,
+} from "lucide-react";
+import { FaLinkedinIn, FaQuoteLeft, FaStar } from "react-icons/fa";
+import heroImage from "../../../assets/home-hero-jewelry-consultation.png";
+import ctaImage from "../../../assets/home-cta-jewelry-banner.png";
+import showroomImage from "../../../assets/about-showroom.png";
+import rohitImage from "../../../assets/about-team-rohit.png";
+import priyaImage from "../../../assets/about-team-priya.png";
+import amitImage from "../../../assets/about-team-amit.png";
+import nehaImage from "../../../assets/about-team-neha.png";
+
+const heroStats = [
+  { value: "10K+", label: "Active Jewelry Professionals", icon: Users },
+  { value: "2K+", label: "Trusted Employers", icon: Building2 },
+  { value: "25+", label: "Cities Across India", icon: MapPin },
+  { value: "98%", label: "Candidate Satisfaction", icon: Award },
+];
+
+const overviewStats = [
+  { value: "10K+", label: "Active Jobs", icon: Briefcase },
+  { value: "2K+", label: "Hiring Companies", icon: Building2 },
+  { value: "15K+", label: "Candidates Placed", icon: UserCheck },
+  { value: "98%", label: "Satisfaction Rate", icon: BadgeCheck },
+];
+
+const missionCards = [
+  {
+    title: "Our Mission",
+    icon: Target,
+    description:
+      "To empower jewelry professionals by connecting them with the right opportunities and helping businesses build high-performing teams.",
+  },
+  {
+    title: "Our Vision",
+    icon: Sparkles,
+    description:
+      "To be the most trusted and preferred jewelry recruitment platform in India and globally, known for quality, trust, and impact.",
+  },
+  {
+    title: "Our Values",
+    icon: Gem,
+    points: ["Trust & Transparency", "Industry Focus", "Speed & Efficiency", "Quality Hiring", "Career Growth"],
+  },
+];
+
+const standOutItems = [
+  {
+    title: "Industry Expertise",
+    description: "Deep understanding of the jewelry sector and its unique hiring needs.",
+    icon: Gem,
+  },
+  {
+    title: "Verified Employers",
+    description: "All companies are verified for credibility, authenticity and quality.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Smart Matching",
+    description: "Advanced matching technology connects the right talent with the right roles.",
+    icon: TrendingUp,
+  },
+  {
+    title: "Dedicated Support",
+    description: "Personalized assistance for job seekers and employers at every step.",
+    icon: Handshake,
+  },
+  {
+    title: "Faster Hiring",
+    description: "Streamlined process to help companies hire the best talent faster.",
+    icon: Clock3,
+  },
+];
+
+const journey = [
+  {
+    year: "2020",
+    title: "The Beginning",
+    description: "Jewelcancy was founded with a vision to transform jewelry recruitment in India.",
+    icon: Target,
+  },
+  {
+    year: "2021",
+    title: "Growing Network",
+    description: "Expanded recruiter partnerships and onboarded thousands of jewelry professionals.",
+    icon: Users,
+  },
+  {
+    year: "2022",
+    title: "Talent Expansion",
+    description: "Strengthened our database and helped businesses across major jewelry hubs.",
+    icon: TrendingUp,
+  },
+  {
+    year: "2023 & Beyond",
+    title: "Nationwide Impact",
+    description: "Continuing to empower careers and build the future of the jewelry industry.",
+    icon: Trophy,
+  },
+];
+
+const team = [
+  {
+    name: "Rohit Mehta",
+    role: "Co-Founder & CEO",
+    description: "Industry expert with 12+ years in HR and jewelry recruitment.",
+    image: rohitImage,
+  },
+  {
+    name: "Priya Sharma",
+    role: "Co-Founder & COO",
+    description: "Specializes in talent strategy and operational excellence.",
+    image: priyaImage,
+  },
+  {
+    name: "Amit Patel",
+    role: "Head of Partnerships",
+    description: "Builds strategic relationships with leading jewelry brands.",
+    image: amitImage,
+  },
+  {
+    name: "Neha Desai",
+    role: "Head of Candidate Success",
+    description: "Ensures exceptional experiences for candidates at every step.",
+    image: nehaImage,
+  },
+];
+
+const helpCards = [
+  {
+    title: "For Job Seekers",
+    icon: UserCheck,
+    button: "Find Your Dream Job",
+    path: "/jobs",
+    items: [
+      "Access to top jewelry jobs across India",
+      "Personalized job recommendations",
+      "Resume visibility to trusted employers",
+      "Career guidance and support",
+    ],
+  },
+  {
+    title: "For Recruiters & Employers",
+    icon: Building2,
+    button: "Hire the Right Talent",
+    path: "/register?role=recruiter",
+    items: [
+      "Post jobs and reach relevant talent",
+      "Verified candidate database",
+      "Faster shortlisting and hiring",
+      "Dedicated account support",
+    ],
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "Jewelcancy helped me find a role that perfectly matches my skills and career goals in the jewelry industry.",
+    name: "Anjali Verma",
+    role: "Jewelry Designer",
+    image: nehaImage,
+  },
+  {
+    quote:
+      "The quality of candidates on Jewelcancy is excellent. We hired skilled professionals within days.",
+    name: "Karan Shah",
+    role: "HR Manager, Shah Diamond Co.",
+    image: rohitImage,
+  },
+  {
+    quote:
+      "A trusted platform for the jewelry community. Their support team is proactive and professional.",
+    name: "Mehul Jain",
+    role: "Director, Jain Jewels",
+    image: amitImage,
+  },
+];
+
+function SectionHeading({ eyebrow, title }) {
+  return (
+    <div className="mx-auto mb-8 max-w-2xl text-center">
+      {eyebrow && <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#9c5c8d]">{eyebrow}</p>}
+      <h2 className="font-serif text-3xl font-bold text-[#2f2430] md:text-4xl">{title}</h2>
+      <div className="mx-auto mt-3 h-0.5 w-16 rounded-full bg-[#7a0e67]" />
+    </div>
+  );
+}
+
+function IconBadge({ icon: Icon, className = "" }) {
+  return (
+    <span
+      className={`inline-flex h-12 w-12 items-center justify-center rounded-lg border border-[#ebd7e5] bg-[#fff8fb] text-[#8b3c7b] ${className}`}
+    >
+      <Icon className="h-6 w-6" />
+    </span>
+  );
+}
 
 export default function About() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("story");
-
-  // Company milestones
-  const milestones = [
-    { year: "2020", title: "Founded", description: "Started with a vision to revolutionize jewelry industry hiring" },
-    { year: "2021", title: "1,000+ Jobs", description: "Reached milestone of 1000+ job postings" },
-    { year: "2022", title: "500+ Companies", description: "Onboarded 500+ trusted companies" },
-    { year: "2023", title: "10,000+ Candidates", description: "Helped 10k+ candidates find their dream jobs" },
-    { year: "2024", title: "Global Expansion", description: "Expanded to serve international markets" },
-  ];
-
-  // Team members
-  const team = [
-    { 
-      name: "Priya Sharma", 
-      role: "Founder & CEO", 
-      experience: "15+ years in Recruitment",
-      image: "https://randomuser.me/api/portraits/women/44.jpg",
-      linkedin: "#",
-      twitter: "#"
-    },
-    { 
-      name: "Rajesh Kumar", 
-      role: "Head of Technology", 
-      experience: "12+ years in Tech",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-      linkedin: "#",
-      twitter: "#"
-    },
-    { 
-      name: "Anjali Mehta", 
-      role: "Director of Operations", 
-      experience: "10+ years in HR",
-      image: "https://randomuser.me/api/portraits/women/68.jpg",
-      linkedin: "#",
-      twitter: "#"
-    },
-    { 
-      name: "Vikram Singh", 
-      role: "Head of Partnerships", 
-      experience: "8+ years in Business Development",
-      image: "https://randomuser.me/api/portraits/men/75.jpg",
-      linkedin: "#",
-      twitter: "#"
-    },
-  ];
-
-  // Testimonials
-  const testimonials = [
-    {
-      name: "Amit Patel",
-      role: "HR Manager at Krishna Jewellers",
-      content: "JewelCancy transformed our hiring process. We found our best designers within days!",
-      rating: 5,
-      image: "https://randomuser.me/api/portraits/men/52.jpg"
-    },
-    {
-      name: "Neha Gupta",
-      role: "Senior Jewelry Designer",
-      content: "Found my dream job through this platform. The process was seamless and professional.",
-      rating: 5,
-      image: "https://randomuser.me/api/portraits/women/63.jpg"
-    },
-    {
-      name: "Suresh Reddy",
-      role: "Recruitment Head at Tanvi Jewelry",
-      content: "The quality of candidates we get is exceptional. Highly recommended for the jewelry industry.",
-      rating: 5,
-      image: "https://randomuser.me/api/portraits/men/91.jpg"
-    },
-  ];
-
-  // Stats counter animation
-  const [counts, setCounts] = useState({ jobs: 0, companies: 0, candidates: 0, placements: 0 });
-  
-  useEffect(() => {
-    const targetCounts = { jobs: 15000, companies: 850, candidates: 25000, placements: 12000 };
-    const duration = 2000; // 2 seconds
-    const steps = 50;
-    const increment = {
-      jobs: Math.ceil(targetCounts.jobs / steps),
-      companies: Math.ceil(targetCounts.companies / steps),
-      candidates: Math.ceil(targetCounts.candidates / steps),
-      placements: Math.ceil(targetCounts.placements / steps)
-    };
-    
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      if (currentStep < steps) {
-        setCounts(prev => ({
-          jobs: Math.min(prev.jobs + increment.jobs, targetCounts.jobs),
-          companies: Math.min(prev.companies + increment.companies, targetCounts.companies),
-          candidates: Math.min(prev.candidates + increment.candidates, targetCounts.candidates),
-          placements: Math.min(prev.placements + increment.placements, targetCounts.placements)
-        }));
-        currentStep++;
-      } else {
-        clearInterval(timer);
-      }
-    }, duration / steps);
-    
-    return () => clearInterval(timer);
-  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Hero Section with Parallax Effect */}
-      <section className="relative bg-gradient-to-r from-blue-900 via-indigo-800 to-purple-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531403009284-440f080d1e12?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center mix-blend-overlay"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-6 py-24 text-center">
-          <div className="inline-block p-3 bg-white/10 backdrop-blur-lg rounded-2xl mb-8">
-            <GiJewelCrown className="text-6xl text-yellow-300" />
+    <div className="min-h-screen bg-[#fffaf7] text-[#362734]">
+      <section className="relative overflow-hidden border-b border-[#f2e3ed] bg-gradient-to-br from-[#fffaf7] via-white to-[#f7edf4]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(122,14,103,0.08),transparent_30%),radial-gradient(circle_at_92%_8%,rgba(194,142,88,0.12),transparent_28%)]" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:px-8 lg:py-20">
+          <div>
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#ecd8e5] bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#7a0e67]">
+              <Sparkles className="h-4 w-4" />
+              About Jewelcancy
+            </p>
+            <h1 className="font-serif text-4xl font-bold leading-tight text-[#211a22] sm:text-5xl lg:text-6xl">
+              About Jewelcancy
+            </h1>
+            <p className="mt-5 max-w-xl font-serif text-2xl font-semibold leading-snug text-[#3f303d] sm:text-3xl">
+              Connecting jewelry talent with trusted opportunities.
+            </p>
+            <p className="mt-5 max-w-xl text-base leading-8 text-[#5e4b5a]">
+              Jewelcancy is India's specialized platform for jewelry recruitment and placement. We connect skilled
+              professionals with leading jewelry brands, manufacturers, and retailers to build meaningful careers and
+              stronger businesses.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => navigate("/jobs")}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5d0f51] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_34px_rgba(93,15,81,0.2)] transition hover:bg-[#45103e]"
+              >
+                Browse Jobs
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/register?role=recruiter")}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#cba8bf] bg-white px-6 py-3 text-sm font-bold text-[#5d0f51] transition hover:bg-[#fff2f8]"
+              >
+                Hire Talent
+              </button>
+            </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            About <span className="text-yellow-300">JewelCancy</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
-            Revolutionizing jewelry industry recruitment through innovation, 
-            transparency, and meaningful connections.
-          </p>
-          
-          {/* Quick Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
-              <FaBuilding className="text-3xl text-yellow-300 mx-auto mb-3" />
-              <div className="text-3xl font-bold">{counts.companies.toLocaleString()}+</div>
-              <div className="text-sm text-blue-200">Companies</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
-              <MdWork className="text-3xl text-yellow-300 mx-auto mb-3" />
-              <div className="text-3xl font-bold">{counts.jobs.toLocaleString()}+</div>
-              <div className="text-sm text-blue-200">Jobs Posted</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
-              <FaUsers className="text-3xl text-yellow-300 mx-auto mb-3" />
-              <div className="text-3xl font-bold">{counts.candidates.toLocaleString()}+</div>
-              <div className="text-sm text-blue-200">Candidates</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6">
-              <FaHandshake className="text-3xl text-yellow-300 mx-auto mb-3" />
-              <div className="text-3xl font-bold">{counts.placements.toLocaleString()}+</div>
-              <div className="text-sm text-blue-200">Placements</div>
+
+          <div className="relative min-h-[31rem]">
+            <img
+              src={heroImage}
+              alt="Jewelry professionals reviewing hiring opportunities"
+              className="ml-auto h-[24rem] w-full max-w-[39rem] rounded-lg object-cover shadow-[0_22px_70px_rgba(82,39,68,0.16)] lg:h-[29rem]"
+            />
+            <img
+              src={ctaImage}
+              alt="Diamond ring detail"
+              className="absolute left-0 top-[45%] hidden h-32 w-44 rounded-lg border-4 border-white object-cover shadow-xl sm:block"
+            />
+            <img
+              src={showroomImage}
+              alt="Luxury jewelry showroom"
+              className="absolute bottom-6 left-[20%] hidden h-36 w-36 rounded-lg border-4 border-white object-cover shadow-xl md:block"
+            />
+            <div className="absolute bottom-0 right-0 w-[min(22rem,92vw)] rounded-lg border border-[#ead5e3] bg-white/95 p-6 shadow-[0_20px_50px_rgba(82,39,68,0.16)] backdrop-blur">
+              <div className="grid gap-4">
+                {heroStats.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="flex items-center gap-4">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#fff3fa] text-[#8b3c7b]">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <p className="text-xl font-bold text-[#2b1f2a]">{item.value}</p>
+                        <p className="text-sm text-[#675363]">{item.label}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tabs Navigation */}
-      <div className="max-w-6xl mx-auto px-6 -mt-8 relative z-10">
-        <div className="bg-white rounded-xl shadow-lg p-2 flex flex-wrap justify-center gap-2">
-          {[
-            { id: "story", label: "Our Story", icon: <FaRocket /> },
-            { id: "mission", label: "Mission & Vision", icon: <FaChartLine /> },
-            { id: "team", label: "Leadership Team", icon: <FaUsers /> },
-            { id: "values", label: "Core Values", icon: <FaCheckCircle /> }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
+      <section className="bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1fr]">
+            <img
+              src={showroomImage}
+              alt="Jewelcancy jewelry showroom"
+              className="h-[22rem] w-full rounded-lg object-cover shadow-[0_16px_40px_rgba(82,39,68,0.12)]"
+            />
+            <div>
+              <h2 className="font-serif text-3xl font-bold text-[#2f2430] md:text-4xl">Who We Are</h2>
+              <div className="mt-5 space-y-5 text-base leading-8 text-[#5f4d5b]">
+                <p>
+                  Jewelcancy is a dedicated jewelry recruitment and placement platform created to bridge the gap
+                  between exceptional talent and the right opportunities in the jewelry industry.
+                </p>
+                <p>
+                  We serve a wide spectrum of businesses, including manufacturers, retailers, designers, gemstone
+                  companies, wholesalers, exporters, and luxury jewelry brands, helping them find the right talent
+                  faster.
+                </p>
+                <p>
+                  From entry-level professionals to senior leadership roles, we empower careers and drive growth for
+                  businesses across the jewelry ecosystem.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {overviewStats.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="rounded-lg border border-[#f0dfe9] bg-[#fffdfb] p-5 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <IconBadge icon={Icon} className="h-11 w-11" />
+                    <div>
+                      <p className="text-2xl font-bold text-[#2f2430]">{item.value}</p>
+                      <p className="text-sm font-medium text-[#685664]">{item.label}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Tab Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Our Story Tab */}
-        {activeTab === "story" && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-              <FaRocket className="text-blue-600" />
-              Our Journey
-            </h2>
-            
-            <div className="grid md:grid-cols-2 gap-12">
-              <div>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  Founded in 2020, <span className="font-semibold text-blue-600">JewelCancy</span> emerged 
-                  from a simple observation: the jewelry industry needed a specialized platform for recruitment. 
-                  Generic recruitment platforms weren't addressing the unique needs of jewelers, designers, and craftspeople.
-                </p>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  Today, we've grown into India's leading jewelry-specific hiring platform, connecting 
-                  talented professionals with renowned jewelry houses, manufacturers, and retailers across the country.
-                </p>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  Our platform handles everything from CAD designers to master craftsmen, ensuring that 
-                  every position finds the perfect match.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className="flex gap-4 items-start">
-                    <div className="bg-blue-100 text-blue-600 font-bold py-2 px-4 rounded-lg min-w-[80px] text-center">
-                      {milestone.year}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-800">{milestone.title}</h4>
-                      <p className="text-sm text-gray-600">{milestone.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      <section className="bg-[#fffaf7] py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="Our Mission, Vision & Values" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {missionCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <article key={card.title} className="rounded-lg border border-[#eedce7] bg-white p-7 shadow-sm">
+                  <IconBadge icon={Icon} />
+                  <h3 className="mt-5 font-serif text-2xl font-bold text-[#6d245d]">{card.title}</h3>
+                  {card.description ? (
+                    <p className="mt-4 text-sm leading-7 text-[#655260]">{card.description}</p>
+                  ) : (
+                    <ul className="mt-4 space-y-2 text-sm text-[#655260]">
+                      {card.points.map((point) => (
+                        <li key={point} className="flex items-center gap-2">
+                          <Check className="h-4 w-4 text-[#7a0e67]" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+              );
+            })}
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* Mission & Vision Tab */}
-        {activeTab === "mission" && (
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl shadow-xl p-8">
-              <div className="bg-white/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                <FaRocket className="text-3xl" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-              <p className="text-lg text-blue-100 leading-relaxed">
-                To empower every jewelry professional with the opportunity to build a fulfilling career 
-                while helping companies discover exceptional talent that drives innovation and excellence 
-                in the jewelry industry.
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-2xl shadow-xl p-8">
-              <div className="bg-white/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                <FaChartLine className="text-3xl" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
-              <p className="text-lg text-purple-100 leading-relaxed">
-                To become the global standard for jewelry industry recruitment, creating a world where 
-                every jewelry professional can find their perfect role, and every company can build 
-                their dream team.
-              </p>
-            </div>
+      <section className="bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="Why Jewelcancy Stands Out" />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+            {standOutItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <article key={item.title} className="rounded-lg border border-[#f0dfe9] bg-white p-5 text-center shadow-sm">
+                  <IconBadge icon={Icon} className="mx-auto" />
+                  <h3 className="mt-4 text-base font-bold text-[#2f2430]">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#655260]">{item.description}</p>
+                </article>
+              );
+            })}
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* Leadership Team Tab */}
-        {activeTab === "team" && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Meet Our Leadership</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {team.map((member, index) => (
-                <div key={index} className="text-center group">
-                  <div className="relative mb-4">
-                    <img 
-                      src={member.image} 
-                      alt={member.name}
-                      className="w-32 h-32 rounded-full mx-auto border-4 border-gray-200 group-hover:border-blue-400 transition-all"
-                    />
-                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 rounded-full transition-opacity"></div>
-                  </div>
-                  <h3 className="font-bold text-gray-800 text-lg">{member.name}</h3>
-                  <p className="text-blue-600 font-medium text-sm mb-1">{member.role}</p>
-                  <p className="text-gray-500 text-xs mb-3">{member.experience}</p>
-                  <div className="flex justify-center gap-2">
-                    <a href={member.linkedin} className="text-gray-400 hover:text-blue-600 transition">
-                      <FaLinkedin />
-                    </a>
-                    <a href={member.twitter} className="text-gray-400 hover:text-blue-400 transition">
-                      <FaTwitter />
-                    </a>
-                    <a href="#" className="text-gray-400 hover:text-red-500 transition">
-                      <FaEnvelope />
-                    </a>
-                  </div>
+      <section className="bg-[#fffaf7] py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="Our Journey" />
+          <div className="relative grid gap-6 md:grid-cols-4">
+            <div className="absolute left-[12%] right-[12%] top-16 hidden h-px bg-[#d9afca] md:block" />
+            {journey.map((item) => {
+              const Icon = item.icon;
+              return (
+                <article key={item.year} className="relative rounded-lg border border-[#eedce7] bg-white p-6 shadow-sm">
+                  <IconBadge icon={Icon} className="mb-8" />
+                  <p className="text-sm font-bold text-[#5d0f51]">{item.year}</p>
+                  <h3 className="mt-2 font-serif text-xl font-bold text-[#6d245d]">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#655260]">{item.description}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="Meet Our Team" />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {team.map((member) => (
+              <article key={member.name} className="rounded-lg border border-[#eedce7] bg-white p-3 shadow-sm">
+                <div className="relative">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="aspect-[4/3] w-full rounded-md bg-[#f7eef4] object-cover object-top"
+                  />
+                  <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-md bg-white/90 text-[#6f315f] shadow-sm">
+                    <FaLinkedinIn className="h-3.5 w-3.5" />
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Core Values Tab */}
-        {activeTab === "values" && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Our Core Values</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { 
-                  icon: <GiDiamondRing className="text-4xl" />, 
-                  title: "Excellence", 
-                  desc: "We strive for excellence in every connection we facilitate, ensuring quality matches." 
-                },
-                { 
-                  icon: <FaHandshake className="text-4xl" />, 
-                  title: "Integrity", 
-                  desc: "We operate with complete transparency and honesty in all our dealings." 
-                },
-                { 
-                  icon: <FaRocket className="text-4xl" />, 
-                  title: "Innovation", 
-                  desc: "We continuously evolve our platform to meet changing industry needs." 
-                },
-                { 
-                  icon: <FaUsers className="text-4xl" />, 
-                  title: "Community", 
-                  desc: "We foster a strong community of professionals and companies." 
-                },
-                { 
-                  icon: <FaGlobe className="text-4xl" />, 
-                  title: "Inclusivity", 
-                  desc: "We embrace diversity and provide equal opportunities for all." 
-                },
-                { 
-                  icon: <VscGraphLine className="text-4xl" />, 
-                  title: "Growth", 
-                  desc: "We're committed to the continuous growth of our users and platform." 
-                },
-              ].map((value, index) => (
-                <div key={index} className="text-center p-6 bg-gray-50 rounded-xl hover:shadow-lg transition">
-                  <div className="text-blue-600 mb-3">{value.icon}</div>
-                  <h3 className="font-bold text-gray-800 mb-2">{value.title}</h3>
-                  <p className="text-sm text-gray-600">{value.desc}</p>
+                <div className="px-2 pb-3 pt-4">
+                  <h3 className="font-bold text-[#2f2430]">{member.name}</h3>
+                  <p className="mt-1 text-sm font-semibold text-[#6d245d]">{member.role}</p>
+                  <p className="mt-2 text-sm leading-6 text-[#655260]">{member.description}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Testimonials Section */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-12 text-center">
-            What People Say About Us
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6 relative">
-                <FaQuoteLeft className="absolute top-4 left-4 text-3xl text-blue-100" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-4 mb-4">
-                    <img 
-                      src={testimonial.image} 
-                      alt={testimonial.name}
-                      className="w-16 h-16 rounded-full border-2 border-blue-200"
-                    />
-                    <div>
-                      <h4 className="font-bold text-gray-800">{testimonial.name}</h4>
-                      <p className="text-sm text-gray-600">{testimonial.role}</p>
-                      <div className="flex gap-1 mt-1">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <span key={i} className="text-yellow-400">★</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 italic">"{testimonial.content}"</p>
-                </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact & CTA Section */}
-      <section className="bg-white py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl shadow-xl p-12">
-            <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
-            <p className="text-lg text-blue-100 mb-8">
-              Join thousands of jewellery professionals and trusted recruiters already using JewelCancy
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => navigate("/register")}
-                className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition shadow-lg"
-              >
-                Create Free Account
-              </button>
-              <button
-                onClick={() => navigate("/contact")}
-                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-3 rounded-lg font-semibold transition"
-              >
-                Contact Sales
-              </button>
-            </div>
-
-            <div className="mt-8 pt-8 border-t border-blue-400 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center justify-center gap-2">
-                <MdEmail className="text-xl" />
-                <span>support@jewelcancy.com</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <FaBuilding className="text-xl" />
-                <span>Mumbai, India</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <FaGlobe className="text-xl" />
-                <span>www.jewelcancy.com</span>
-              </div>
+      <section className="bg-[#fffaf7] py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="How We Help" />
+          <div className="grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1fr]">
+            {helpCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <article key={card.title} className="rounded-lg border border-[#ead5e3] bg-white p-7 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <IconBadge icon={Icon} />
+                    <h3 className="font-serif text-2xl font-bold text-[#6d245d]">{card.title}</h3>
+                  </div>
+                  <ul className="mt-6 space-y-3 text-sm text-[#5f4d5b]">
+                    {card.items.map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7a0e67]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => navigate(card.path)}
+                    className="mt-7 inline-flex items-center gap-2 rounded-lg bg-[#5d0f51] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#45103e]"
+                  >
+                    {card.button}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                  {index === 0 && <span className="sr-only">Job seeker support</span>}
+                </article>
+              );
+            })}
+            <div className="hidden items-center justify-center lg:flex">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#ead5e3] bg-white text-[#6d245d] shadow-sm">
+                <Users className="h-7 w-7" />
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer Stats Banner */}
-      <div className="bg-gray-900 text-white py-8">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-400">24/7</div>
-              <div className="text-sm text-gray-400">Support Available</div>
+      <section className="bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading title="What People Say" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {testimonials.map((testimonial) => (
+              <article key={testimonial.name} className="rounded-lg border border-[#eedce7] bg-white p-6 shadow-sm">
+                <div className="flex gap-1 text-[#d58b23]">
+                  {[0, 1, 2, 3, 4].map((star) => (
+                    <FaStar key={star} className="h-4 w-4" />
+                  ))}
+                </div>
+                <div className="mt-5 flex gap-3">
+                  <FaQuoteLeft className="mt-1 h-5 w-5 shrink-0 text-[#b474a4]" />
+                  <p className="text-sm leading-7 text-[#5f4d5b]">{testimonial.quote}</p>
+                </div>
+                <div className="mt-6 flex items-center gap-3">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="h-12 w-12 rounded-full object-cover object-top"
+                  />
+                  <div>
+                    <p className="font-bold text-[#2f2430]">{testimonial.name}</p>
+                    <p className="text-sm text-[#6e5b68]">{testimonial.role}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#fffaf7] px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-lg bg-[#5d0f51] shadow-[0_22px_54px_rgba(93,15,81,0.18)]">
+          <div className="grid items-center lg:grid-cols-[0.95fr_1.4fr_auto]">
+            <img src={ctaImage} alt="Diamond jewelry" className="h-44 w-full object-cover lg:h-full" />
+            <div className="px-6 py-8 text-white md:px-10">
+              <h2 className="font-serif text-3xl font-bold md:text-4xl">Let's Build Jewelry Careers Together</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#f7d8ea]">
+                Join thousands of professionals and companies building the future of the jewelry industry.
+              </p>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-400">98%</div>
-              <div className="text-sm text-gray-400">Success Rate</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-400">15min</div>
-              <div className="text-sm text-gray-400">Avg. Response Time</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-400">24/7</div>
-              <div className="text-sm text-gray-400">Support Available</div>
+            <div className="flex flex-col gap-3 px-6 pb-8 md:flex-row lg:flex-col lg:px-8 lg:py-8">
+              <button
+                type="button"
+                onClick={() => navigate("/jobs")}
+                className="rounded-lg bg-white px-6 py-3 text-sm font-bold text-[#5d0f51] transition hover:bg-[#fff3fa]"
+              >
+                Browse Jobs
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/register?role=recruiter")}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/50 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              >
+                Hire Talent
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

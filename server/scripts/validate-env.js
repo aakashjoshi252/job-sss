@@ -94,9 +94,9 @@ function validateEnv() {
     process.exit(1);
   }
 
-  const mongoUrl = value.MONGO_URL || value.MONGODB_URI;
+  const mongoUrl = value.MONGODB_URI || value.MONGO_URL;
   if (!mongoUrl) {
-    console.error('âŒ Environment validation failed: MONGO_URL or MONGODB_URI is required');
+    console.error('Environment validation failed: MONGODB_URI is required');
     process.exit(1);
   }
   

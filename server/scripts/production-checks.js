@@ -64,8 +64,8 @@ class ProductionChecker {
 
     // Database Configuration
     this.check('MongoDB URL configured', () => {
-      const url = this.getFirstEnvValue(['MONGO_URL', 'MONGODB_URI']);
-      if (!url) return 'MONGO_URL or MONGODB_URI not set';
+      const url = this.getFirstEnvValue(['MONGODB_URI', 'MONGO_URL']);
+      if (!url) return 'MONGODB_URI not set';
       if (url.includes('localhost') || url.includes('127.0.0.1')) {
         return 'MongoDB URL points to localhost, should use cloud database';
       }

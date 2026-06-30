@@ -7,9 +7,9 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const connectDb = async () => {
   try {
-    const mongoUrl = process.env.MONGO_URL || process.env.MONGODB_URI;
+    const mongoUrl = process.env.MONGODB_URI || process.env.MONGO_URL;
     if (!mongoUrl) {
-      throw new Error("MONGO_URL or MONGODB_URI is required");
+      throw new Error("MONGODB_URI is required");
     }
 
     const options = {
