@@ -1,8 +1,9 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env'), quiet: true });
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), override: true, quiet: true });
 const mongoose = require('mongoose');
 const express = require('express');
 const http = require('http');
-const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
@@ -51,8 +52,9 @@ const port = process.env.PORT || 3000;
 const nodeEnv = process.env.NODE_ENV || 'development';
 const API_VERSION = '/api/v1';
 
-if (nodeEnv === 'production') {
-  app.set('trust proxy', 1);
+const trustProxy = process.env.TRUST_PROXY || (nodeEnv === 'production' ? '1' : '');
+if (trustProxy) {
+  app.set('trust proxy', trustProxy === 'true' ? 1 : Number(trustProxy) || trustProxy);
 }
 
 /* ================= DATABASE CONNECTION ================= */
@@ -79,6 +81,7 @@ const parseOriginList = (value = "") =>
 const defaultDevelopmentOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://172.27.128.1:5173",
 ];
 
 const defaultProductionOrigins = [
@@ -87,12 +90,17 @@ const defaultProductionOrigins = [
   "https://jewelcancy.com",
 ];
 
-const developmentOrigins = nodeEnv === "production"
-  ? []
-  : [
+const configuredDevelopmentOrigins = parseOriginList(process.env.DEV_ALLOWED_ORIGINS);
+const allowDynamicDevOrigins =
+  nodeEnv !== "production" || process.env.ALLOW_LOCAL_DEV_ORIGINS === "true";
+
+const developmentOrigins = allowDynamicDevOrigins
+  ? [
       ...defaultDevelopmentOrigins,
-      ...parseOriginList(process.env.DEV_ALLOWED_ORIGINS || process.env.CLIENT_URL),
-    ];
+      ...configuredDevelopmentOrigins,
+      ...parseOriginList(process.env.CLIENT_URL),
+    ]
+  : configuredDevelopmentOrigins;
 
 const allowedOrigins = [
   ...developmentOrigins,
@@ -109,14 +117,11 @@ const normalizeOrigin = (origin) => origin?.replace(/\/$/, "");
 const normalizedAllowedOrigins = [...new Set(allowedOrigins.map(normalizeOrigin))];
 
 const isDevelopmentLanOrigin = (origin) => {
-  if (nodeEnv === "production" || !origin) return false;
+  if (!allowDynamicDevOrigins || !origin) return false;
 
   try {
-    const { hostname, protocol } = new URL(origin);
-    const isHttp = protocol === "http:" || protocol === "https:";
-    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
-    const isLanHost = /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname);
-    return isHttp && (isLocalHost || isLanHost);
+    const cleanOrigin = normalizeOrigin(origin);
+    return /^https?:\/\/(localhost|127\.0\.0\.1|172\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+$/i.test(cleanOrigin);
   } catch (_error) {
     return false;
   }

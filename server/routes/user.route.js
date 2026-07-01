@@ -1,6 +1,7 @@
 const express = require("express");
 const userRoute = express.Router();
 const userController = require("../controllers/user.controller.js");
+const loginActivityController = require("../controllers/loginActivity.controller.js");
 const { protect, isAdmin } = require("../middlewares/auth.middleware.js");
 const { authLimiter, verificationLimiter } = require("../middlewares/security");
 const {
@@ -30,6 +31,8 @@ userRoute.post("/resendOtp", verificationLimiter, userController.resendOTP);    
 // USER ROUTES
 // =========================
 userRoute.get("/me", protect, userController.getLoggedInUser);
+userRoute.get("/login-activity", protect, loginActivityController.getMyLoginActivity);
+userRoute.get("/security/login-history", protect, loginActivityController.getMyLoginActivity);
 userRoute.get("/data", protect, isAdmin, userController.getUsers);
 userRoute.patch(
   "/profile",

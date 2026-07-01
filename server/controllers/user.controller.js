@@ -3,6 +3,12 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const nodemailer = require("nodemailer");
 const logger = require("../utils/logger");
+const jwt = require("jsonwebtoken");
+const { getClientIp } = require("../utils/requestIp");
+const {
+  markLatestLogoutActivity,
+  recordLoginActivity,
+} = require("../services/loginActivity.service");
 
 const {
   uploadProfileImageToCloudinary,
@@ -370,8 +376,16 @@ const userController = {
   loginUser: async (req, res) => {
     try {
       const { email, password } = req.body;
+      const normalizedEmail = normalizeEmail(email);
 
       if (!email || !password) {
+        await recordLoginActivity({
+          req,
+          email: normalizedEmail,
+          status: "failed",
+          reason: "Missing email or password",
+        });
+
         return res.status(400).json({
           success: false,
           message: "Email and password are required",
@@ -379,10 +393,17 @@ const userController = {
       }
 
       // Find user and explicitly select password field
-      const user = await User.findOne({ email: email.toLowerCase().trim() })
+      const user = await User.findOne({ email: normalizedEmail })
         .select("+password +emailVerificationOTP +emailVerificationOTPExpires");
 
       if (!user) {
+        await recordLoginActivity({
+          req,
+          email: normalizedEmail,
+          status: "failed",
+          reason: "Invalid email or password",
+        });
+
         return res.status(401).json({
           success: false,
           message: "Invalid email or password",
@@ -391,6 +412,14 @@ const userController = {
 
       // Check if email is verified
       if (!user.isEmailVerified) {
+        await recordLoginActivity({
+          req,
+          user,
+          email: normalizedEmail,
+          status: "failed",
+          reason: "Email is not verified",
+        });
+
         return res.status(401).json({
           success: false,
           message: "Please verify your email before logging in",
@@ -401,6 +430,14 @@ const userController = {
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
+        await recordLoginActivity({
+          req,
+          user,
+          email: normalizedEmail,
+          status: "failed",
+          reason: "Invalid email or password",
+        });
+
         return res.status(401).json({
           success: false,
           message: "Invalid email or password",
@@ -418,6 +455,25 @@ const userController = {
         maxAge: getJwtCookieMaxAge(),
       });
 
+      const loginActivity = await recordLoginActivity({
+        req,
+        user,
+        email: normalizedEmail,
+        status: "success",
+      });
+      const lastLoginAt = loginActivity?.loginTime || new Date();
+      const lastLoginIp = loginActivity?.ipAddress || getClientIp(req);
+
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            lastLoginAt,
+            lastLoginIp,
+          },
+        }
+      );
+
       // Prepare user response
       const userResponse = {
         _id: user._id,
@@ -432,6 +488,7 @@ const userController = {
         bio: user.bio || "",
         location: user.location || "",
         website: user.website || "",
+        lastLoginAt,
         ...(user.jobProfession && { jobProfession: user.jobProfession }),
       };
 
@@ -450,8 +507,22 @@ const userController = {
     }
   },
 
-  logoutUser: (req, res) => {
+  logoutUser: async (req, res) => {
     const isProduction = process.env.NODE_ENV === "production";
+    const token =
+      req.cookies?.token
+      || (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : null);
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        await markLatestLogoutActivity(decoded.id);
+      } catch (error) {
+        logger.warn(`Logout activity could not be recorded: ${error.message}`);
+      }
+    }
 
     res.clearCookie("token", {
       httpOnly: true,

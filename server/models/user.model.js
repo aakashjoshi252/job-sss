@@ -172,6 +172,18 @@ const usersSchema = new mongoose.Schema(
         "Please provide a valid URL",
       ],
     },
+
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+
+    lastLoginIp: {
+      type: String,
+      default: "",
+      trim: true,
+      select: false,
+    },
   },
   { 
     timestamps: true, 

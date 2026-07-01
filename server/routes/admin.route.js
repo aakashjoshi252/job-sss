@@ -3,6 +3,7 @@ const adminRouter = express.Router();
 const { protect } = require('../middlewares/auth.middleware');
 const { isAdmin } = require('../middlewares/admin.middleware');
 const adminController = require('../controllers/admin.controller');
+const loginActivityController = require('../controllers/loginActivity.controller');
 const subscriptionController = require('../controllers/subscription.controller');
 
 // All admin routes require authentication and admin role
@@ -12,6 +13,9 @@ adminRouter.use(protect, isAdmin);
 adminRouter.get('/stats', adminController.getAdminStats);
 adminRouter.get('/dashboard', adminController.getAdminStats);
 adminRouter.get('/analytics', adminController.getAnalytics);
+adminRouter.get('/login-activity', loginActivityController.getAdminLoginActivity);
+adminRouter.get('/login-activity/:userId', loginActivityController.getAdminLoginActivityByUser);
+adminRouter.delete('/login-activity/:id', loginActivityController.deleteLoginActivity);
 
 // User Management
 adminRouter.get('/users', adminController.getAllUsers);

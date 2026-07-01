@@ -6,7 +6,17 @@
 const Joi = require('joi');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+const dotenv = require('dotenv');
+
+const rootEnvPath = path.join(__dirname, '..', '..', '.env');
+const serverEnvPath = path.join(__dirname, '..', '.env');
+dotenv.config({ path: rootEnvPath, quiet: true });
+dotenv.config({ path: serverEnvPath, override: true, quiet: true });
+dotenv.config({
+  path: path.join(__dirname, '..', `.env.${process.env.NODE_ENV || 'development'}`),
+  override: true,
+  quiet: true,
+});
 
 // Define required environment variables schema
 const envSchema = Joi.object({
@@ -72,8 +82,8 @@ function validateEnv() {
   console.log('🔍 Validating environment variables...');
   
   // Load .env file if exists
-  const envPath = path.join(__dirname, '..', '.env');
-  if (!fs.existsSync(envPath) && process.env.NODE_ENV !== 'production') {
+  const hasEnvFile = fs.existsSync(serverEnvPath) || fs.existsSync(rootEnvPath);
+  if (!hasEnvFile && process.env.NODE_ENV !== 'production') {
     console.error('❌ .env file not found!');
     console.error('💡 Create one using: cp .env.example .env');
     process.exit(1);
